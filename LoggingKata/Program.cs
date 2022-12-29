@@ -9,6 +9,7 @@ namespace LoggingKata
     {
         static readonly ILog logger = new TacoLogger();
         const string csvPath = "TacoBell-US-AL.csv";
+        const double MetersToMiles = 0.00062137;
 
         static void Main(string[] args)
         {
@@ -20,13 +21,17 @@ namespace LoggingKata
             // use File.ReadAllLines(path) to grab all the lines from your csv file
             // Log and error if you get 0 lines and a warning if you get 1 line
             var lines = File.ReadAllLines(csvPath);
-
+            if (true)
+            {
+                logger.LogInfo("Length is < 3");
+            }
             logger.LogInfo($"Lines: {lines[0]}");
 
             // Create a new instance of your TacoParser class
             var parser = new TacoParser();
 
             // Grab an IEnumerable of locations using the Select command: var locations = lines.Select(parser.Parse);
+            //Transforms each line (string)  to an ITrackable object  and saves it to the locations array
             var locations = lines.Select(parser.Parse).ToArray();
 
             // DON'T FORGET TO LOG YOUR STEPS
@@ -36,7 +41,42 @@ namespace LoggingKata
             // TODO: Create two `ITrackable` variables with initial values of `null`. These will be used to store your two taco bells that are the farthest from each other.
             // Create a `double` variable to store the distance
 
+            ITrackable tacoBell1 = null;
+            ITrackable tacoBell2 = null;
+            double finalDistance = 0;
+            double testDistance = 0;
+            var geo1 = new GeoCoordinate();
+            var geo2 = new GeoCoordinate();
+
+
             // Include the Geolocation toolbox, so you can compare locations: `using GeoCoordinatePortable;`
+
+            for (int i = 0; i < locations.Length; i++)
+            {
+                geo1.Latitude = locations[i].Location.Latitude;
+                geo1.Longitude = locations[i].Location.Longitude;
+                //Grab The First location -- Putting info into first geo coordinate
+                for (int j = 1; j < locations.Length; i++)
+                {
+                    geo2.Latitude = locations[j].Location.Latitude;
+                    geo2.Longitude = locations[j].Location.Longitude;
+
+                    testDistance = geo1.GetDistanceTo(geo2);
+
+                    if (finalDistance < testDistance) // Check
+                    {
+                        finalDistance = testDistance;
+                        tacoBell1 = locations[i];
+                        tacoBell2 = locations[j];
+
+
+                        Console.WriteLine($"The 2 furthest {tacoBell1.GetType().Name}'s are {tacoBell1.Name} & {tacoBell2.Name}");
+                        Console.WriteLine($"The total distance is {Math.Round((finalDistance * MetersToMiles), 2)} miles.");
+                    }
+                }
+            }
+
+         
 
             //HINT NESTED LOOPS SECTION---------------------
             // Do a loop for your locations to grab each location as the origin (perhaps: `locA`)
@@ -53,7 +93,6 @@ namespace LoggingKata
             // Once you've looped through everything, you've found the two Taco Bells farthest away from each other.
 
 
-            
         }
     }
 }
